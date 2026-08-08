@@ -43,8 +43,13 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   tag="${GITHUB_REF#refs/tags/}"
+                  version="$(node -p "JSON.parse(require('fs').readFileSync('manifest.json', 'utf8')).version")"
 
-                  gh release create "$tag" \
-                    --title="$tag" \
-                    --draft \
+                  if [[ "$tag" != "$version" ]]; then
+                    echo "Release tag '$tag' must exactly match manifest.json version '$version'." >&2
+                    exit 1
+                  fi
+
+                  gh release create "$version" \
+                    --title="$version" \
                     main.js manifest.json ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
