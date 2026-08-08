@@ -1,49 +1,61 @@
-# Obsidian Sample Plugin
+# Bonsai Almanac
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+An Obsidian community plugin that ports [dotknewt/bonsai](https://github.com/dotknewt/bonsai)'s
+"on the bench" care-window tracking into your vault. Species care schedules
+live as plain Markdown notes — frontmatter plus one `## Heading` per care
+task — so you can read and edit them like any other note, including in
+Obsidian itself.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## What it does
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
+- Reads species notes from a folder you choose (**Settings → Bonsai
+  Almanac → Species folder**).
+- Shows an **Almanac** view (ribbon icon or the **Open almanac** command):
+  - **On the bench** — every upcoming care window across your species,
+    grouped into *Open now*, *Coming up* and *Completed*.
+  - A per-species **care plan** with check-offs, persisted in the plugin's
+    data file (not written back to your notes).
+- Automatically refreshes when species notes are created, edited, renamed,
+  or deleted.
 
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and outputs a Notice on click.
-- Registers a global interval which logs 'setInterval' to the console.
+## Species note format
 
-## First time developing plugins?
+Each species is one Markdown note. Frontmatter carries the species'
+identity; each `## Heading` is a care task.
 
-Quick starting guide for new plugin devs:
+```md
+---
+id: juniper-juniperus-procumbens
+order: 1
+name: Juniper
+botanicalName: Juniperus procumbens
+---
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `src/main.ts` to `main.js`.
-- Make changes to `src/main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+Optional free-text notes on sourcing/provenance for the care data below.
 
-## Releasing new releases
+## Spring health check
+- id: j1
+- category: other
+- start: 04-20
+- end: 05-10
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+Junipers wake late, and a dead one can hold normal foliage colour for weeks
+after the roots have died...
+```
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+- **Frontmatter:** `id` (stable — completion check-offs key on it), `order`
+  (display order), `name`, `botanicalName`.
+- **Task sections:** `title` is the heading text, followed by `- key: value`
+  metadata lines (`id`, `category`, `start`/`end` as `MM-DD`), then a blank
+  line and the task's free-text description.
+- `category` is one of `repot`, `feed`, `prune`, `wire`, `propagate`, `seed`,
+  `pest`, or anything else (treated as `other`).
+- `end` may be omitted — it defaults to the category's typical span (~3
+  weeks for repotting, ~1 month for pruning, ~2 months for wiring, ~3 months
+  for feeding/pest watch), same as the original bonsai app.
 
-## Adding your plugin to the community plugin list
-
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+See `examples/species/` for two ready-to-copy sample notes (Juniper, Japanese
+Maple) — drop them into your configured species folder to try the plugin.
 
 ## How to use
 
@@ -54,38 +66,25 @@ Quick starting guide for new plugin devs:
 
 ## Manually installing the plugin
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+- Copy over `main.js`, `styles.css`, `manifest.json` to your vault
+  `VaultFolder/.obsidian/plugins/bonsai-almanac/`.
+- Reload Obsidian and enable **Bonsai Almanac** under **Settings →
+  Community plugins**.
+- Set your species folder in the plugin's settings tab, then add species
+  notes (see the format above, or copy the examples in `examples/species/`).
 
 ## Improve code quality with eslint
 
 - [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code.
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
+- This project already has eslint preconfigured, you can invoke a check by running `npm run lint`.
+- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidian-specific code guidelines.
 - A GitHub action is preconfigured to automatically lint every commit on all branches.
 
-## Funding URL
+## Credits
 
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-	"fundingUrl": "https://buymeacoffee.com"
-}
-```
-
-If you have multiple URLs, you can also do:
-
-```json
-{
-	"fundingUrl": {
-		"Buy Me a Coffee": "https://buymeacoffee.com",
-		"GitHub Sponsor": "https://github.com/sponsors",
-		"Patreon": "https://www.patreon.com/"
-	}
-}
-```
+Ported from the [dotknewt/bonsai](https://github.com/dotknewt/bonsai) PWA,
+including its Markdown+frontmatter species format
+([PR #29](https://github.com/dotknewt/bonsai/pull/29)).
 
 ## API Documentation
 

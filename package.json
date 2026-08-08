@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "bonsai-almanac",
+	"version": "0.1.0",
+	"description": "Track bonsai care windows from species notes written in Markdown with frontmatter, right inside your vault.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

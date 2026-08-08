@@ -1,8 +1,113 @@
-/*
+.bonsai-almanac-view {
+	padding: 0 var(--size-4-4) var(--size-4-4);
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.bonsai-muted {
+	color: var(--text-muted);
+}
 
-If your plugin does not need CSS, delete this file.
+.bonsai-species-header {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	margin-bottom: var(--size-4-2);
+}
 
-*/
+.bonsai-botanical-name {
+	font-style: italic;
+	color: var(--text-muted);
+}
+
+.bonsai-task-list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	margin-bottom: var(--size-4-3);
+}
+
+.bonsai-task-row {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2) var(--size-4-3);
+	border-radius: var(--radius-m);
+	background: var(--background-secondary);
+}
+
+.bonsai-task-row-open {
+	box-shadow: inset 2px 0 0 0 var(--interactive-accent);
+}
+
+.bonsai-task-toggle {
+	width: 20px;
+	height: 20px;
+	min-width: 20px;
+	margin-top: 2px;
+	border-radius: 999px;
+	border: 1.5px solid var(--bonsai-cat-color, var(--text-muted));
+	background: transparent;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	cursor: pointer;
+}
+
+.bonsai-task-toggle-done {
+	background: var(--bonsai-cat-color, var(--text-muted));
+	color: var(--background-primary);
+}
+
+.bonsai-task-body {
+	flex: 1;
+	min-width: 0;
+}
+
+.bonsai-task-title-line {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	flex-wrap: wrap;
+}
+
+.bonsai-task-title-done {
+	opacity: 0.5;
+	text-decoration: line-through;
+}
+
+.bonsai-task-species {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.bonsai-badge {
+	font-size: var(--font-ui-smaller);
+	padding: 0 var(--size-4-1);
+	border-radius: var(--radius-s);
+	color: var(--bonsai-cat-color);
+	border: 1px solid var(--bonsai-cat-color);
+}
+
+.bonsai-task-desc {
+	margin: var(--size-4-1) 0 0;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.bonsai-task-meta {
+	margin: var(--size-4-1) 0 0;
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}
+
+.bonsai-task-open-tag {
+	color: var(--interactive-accent);
+}
+
+.bonsai-link-button {
+	background: none;
+	border: none;
+	color: var(--text-accent);
+	cursor: pointer;
+	padding: 0;
+}

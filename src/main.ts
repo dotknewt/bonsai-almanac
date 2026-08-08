@@ -1,89 +1,41 @@
-import {
-	Editor,
-	MarkdownView,
-	MarkdownFileInfo,
-	Modal,
-	Notice,
-	Plugin,
-} from 'obsidian';
-import {
-	DEFAULT_SETTINGS,
-	MyPluginSettings,
-	SampleSettingTab,
-} from './settings';
+import { Plugin, WorkspaceLeaf } from 'obsidian';
+import { BonsaiAlmanacSettings, DEFAULT_SETTINGS, BonsaiAlmanacSettingTab } from './settings';
+import { ALMANAC_VIEW_TYPE, AlmanacView, notifySpeciesLoadError } from './view/AlmanacView';
+import { loadSpeciesFromFolder } from './lib/speciesLoader';
+import { pruneCompletionsToYear } from './lib/storage';
+import { Species } from './types';
 
-// Remember to rename these classes and interfaces!
-
-export default class MyPlugin extends Plugin {
-	settings!: MyPluginSettings;
+export default class BonsaiAlmanacPlugin extends Plugin {
+	settings!: BonsaiAlmanacSettings;
+	private speciesCache: Species[] | null = null;
 
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('dice', 'Sample', (_evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+		this.registerView(ALMANAC_VIEW_TYPE, (leaf) => new AlmanacView(leaf, this));
+
+		this.addRibbonIcon('sprout', 'Open bonsai almanac', () => {
+			void this.activateView();
 		});
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status bar text');
-
-		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
+			id: 'open-almanac',
+			name: 'Open almanac',
 			callback: () => {
-				new SampleModal(this.app).open();
-			},
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (
-				editor: Editor,
-				_ctx: MarkdownView | MarkdownFileInfo,
-			) => {
-				editor.replaceSelection('Sample editor command');
-			},
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView =
-					this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-				return false;
+				void this.activateView();
 			},
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(activeDocument, 'click', (_evt: MouseEvent) => {
-			new Notice('Click');
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(
-			window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000),
+		// Invalidate the species cache when notes change under the vault so
+		// the almanac reflects edits without needing a manual reload.
+		this.registerEvent(
+			this.app.vault.on('modify', (file) => this.onVaultChange(file.path)),
 		);
+		this.registerEvent(this.app.vault.on('create', (file) => this.onVaultChange(file.path)));
+		this.registerEvent(this.app.vault.on('delete', (file) => this.onVaultChange(file.path)));
+		this.registerEvent(this.app.vault.on('rename', (file) => this.onVaultChange(file.path)));
+
+		this.addSettingTab(new BonsaiAlmanacSettingTab(this.app, this));
 	}
 
 	onunload() {}
@@ -92,23 +44,61 @@ export default class MyPlugin extends Plugin {
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
-			(await this.loadData()) as Partial<MyPluginSettings>,
+			(await this.loadData()) as Partial<BonsaiAlmanacSettings>,
+		);
+		// Drop completion entries from years other than the current one so
+		// the stored data doesn't grow forever.
+		this.settings.completions = pruneCompletionsToYear(
+			this.settings.completions,
+			new Date().getFullYear(),
 		);
 	}
 
 	async saveSettings() {
+		this.settings.completions = pruneCompletionsToYear(
+			this.settings.completions,
+			new Date().getFullYear(),
+		);
 		await this.saveData(this.settings);
 	}
-}
 
-class SampleModal extends Modal {
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.setText('Woah!');
+	async getSpecies(): Promise<Species[]> {
+		if (this.speciesCache) return this.speciesCache;
+		try {
+			this.speciesCache = await loadSpeciesFromFolder(this.app, this.settings.speciesFolder);
+		} catch (err) {
+			notifySpeciesLoadError(err);
+			this.speciesCache = [];
+		}
+		return this.speciesCache;
 	}
 
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
+	async refreshAlmanacViews(): Promise<void> {
+		this.speciesCache = null;
+		for (const leaf of this.app.workspace.getLeavesOfType(ALMANAC_VIEW_TYPE)) {
+			if (leaf.view instanceof AlmanacView) {
+				await leaf.view.refresh();
+			}
+		}
+	}
+
+	private onVaultChange(path: string): void {
+		const folder = this.settings.speciesFolder.replace(/^\/+|\/+$/g, '');
+		if (!folder || path.startsWith(`${folder}/`) || path === folder) {
+			void this.refreshAlmanacViews();
+		}
+	}
+
+	private async activateView(): Promise<void> {
+		const { workspace } = this.app;
+		let leaf: WorkspaceLeaf | null = null;
+		const existing = workspace.getLeavesOfType(ALMANAC_VIEW_TYPE);
+		if (existing.length > 0) {
+			leaf = existing[0] ?? null;
+		} else {
+			leaf = workspace.getLeaf('tab');
+			await leaf.setViewState({ type: ALMANAC_VIEW_TYPE, active: true });
+		}
+		if (leaf) await workspace.revealLeaf(leaf);
 	}
 }
