@@ -21,6 +21,28 @@ export class BonsaiAlmanacSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
+	getSettingDefinitions() {
+		return [
+			{
+				name: 'Species folder',
+				desc: 'Vault folder containing your species notes (Markdown with frontmatter and ## task sections).',
+				control: {
+					type: 'text' as const,
+					key: 'speciesFolder',
+					defaultValue: DEFAULT_SETTINGS.speciesFolder,
+				},
+			},
+		];
+	}
+
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		if (key !== 'speciesFolder' || typeof value !== 'string') return;
+
+		this.plugin.settings.speciesFolder = value.trim();
+		await this.plugin.saveSettings();
+		await this.plugin.refreshAlmanacViews();
+	}
+
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
