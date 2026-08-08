@@ -4,6 +4,7 @@ on:
     push:
         tags:
             - '*'
+    workflow_dispatch:
 
 jobs:
     build:
@@ -50,6 +51,15 @@ jobs:
                     exit 1
                   fi
 
-                  gh release create "$version" \
-                    --title="$version" \
-                    main.js manifest.json ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
+                  assets=(main.js manifest.json)
+                  if [[ "${{ steps.styles.outputs.exists }}" == "true" ]]; then
+                    assets+=(styles.css)
+                  fi
+
+                  if gh release view "$version" >/dev/null 2>&1; then
+                    gh release upload "$version" "${assets[@]}" --clobber
+                  else
+                    gh release create "$version" \
+                      --title="$version" \
+                      "${assets[@]}"
+                  fi
