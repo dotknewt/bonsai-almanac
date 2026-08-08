@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting, type SettingDefinitionItem } from 'obsidian';
 import type BonsaiAlmanacPlugin from './main';
 
 export interface BonsaiAlmanacSettings {
@@ -21,7 +21,31 @@ export class BonsaiAlmanacSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	display(): void {
+	// Obsidian 1.13+ uses these definitions for settings rendering and search.
+	override getSettingDefinitions(): SettingDefinitionItem[] {
+		return [
+			{
+				name: 'Species folder',
+				desc: 'Vault folder containing your species notes (Markdown with frontmatter and ## task sections).',
+				control: {
+					type: 'text' as const,
+					key: 'speciesFolder',
+					defaultValue: DEFAULT_SETTINGS.speciesFolder,
+				},
+			},
+		];
+	}
+
+	// Keep declarative setting updates aligned with the legacy settings behavior.
+	override async setControlValue(key: string, value: unknown): Promise<void> {
+		if (key !== 'speciesFolder' || typeof value !== 'string') return;
+
+		this.plugin.settings.speciesFolder = value.trim();
+		await this.plugin.saveSettings();
+		await this.plugin.refreshAlmanacViews();
+	}
+
+	override display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
