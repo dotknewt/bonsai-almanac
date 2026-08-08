@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting, type SettingDefinitionItem } from 'obsidian';
 import type BonsaiAlmanacPlugin from './main';
 
 export interface BonsaiAlmanacSettings {
@@ -22,7 +22,7 @@ export class BonsaiAlmanacSettingTab extends PluginSettingTab {
 	}
 
 	// Obsidian 1.13+ uses these definitions for settings rendering and search.
-	getSettingDefinitions() {
+	override getSettingDefinitions(): SettingDefinitionItem[] {
 		return [
 			{
 				name: 'Species folder',
@@ -37,7 +37,7 @@ export class BonsaiAlmanacSettingTab extends PluginSettingTab {
 	}
 
 	// Keep declarative setting updates aligned with the legacy settings behavior.
-	async setControlValue(key: string, value: unknown): Promise<void> {
+	override async setControlValue(key: string, value: unknown): Promise<void> {
 		if (key !== 'speciesFolder' || typeof value !== 'string') return;
 
 		this.plugin.settings.speciesFolder = value.trim();
@@ -45,7 +45,7 @@ export class BonsaiAlmanacSettingTab extends PluginSettingTab {
 		await this.plugin.refreshAlmanacViews();
 	}
 
-	display(): void {
+	override display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
