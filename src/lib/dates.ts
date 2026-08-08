@@ -1,6 +1,8 @@
 import { defaultSpanDays } from './categories';
 import { CareTask, WindowStatus } from '../types';
 
+// Day counts for a non-leap year — paired with the fixed REF_YEAR below for
+// pure month/day arithmetic; leap years are intentionally not modeled.
 export const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export const REF_YEAR = 2001; // non-leap year used for pure month/day arithmetic
 

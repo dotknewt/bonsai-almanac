@@ -197,7 +197,7 @@ export class AlmanacView extends ItemView {
 
 	private renderTaskRow(
 		container: HTMLElement,
-		row: { species: Species; task: CareTask; open: boolean; start: Date; end: Date; done: boolean },
+		row: BenchRow,
 		year: number,
 		showSpeciesName: boolean,
 	): void {

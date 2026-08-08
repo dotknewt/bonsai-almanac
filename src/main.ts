@@ -2,6 +2,7 @@ import { Plugin, WorkspaceLeaf } from 'obsidian';
 import { BonsaiAlmanacSettings, DEFAULT_SETTINGS, BonsaiAlmanacSettingTab } from './settings';
 import { ALMANAC_VIEW_TYPE, AlmanacView, notifySpeciesLoadError } from './view/AlmanacView';
 import { loadSpeciesFromFolder } from './lib/speciesLoader';
+import { pruneCompletionsToYear } from './lib/storage';
 import { Species } from './types';
 
 export default class BonsaiAlmanacPlugin extends Plugin {
@@ -45,9 +46,19 @@ export default class BonsaiAlmanacPlugin extends Plugin {
 			DEFAULT_SETTINGS,
 			(await this.loadData()) as Partial<BonsaiAlmanacSettings>,
 		);
+		// Drop completion entries from years other than the current one so
+		// the stored data doesn't grow forever.
+		this.settings.completions = pruneCompletionsToYear(
+			this.settings.completions,
+			new Date().getFullYear(),
+		);
 	}
 
 	async saveSettings() {
+		this.settings.completions = pruneCompletionsToYear(
+			this.settings.completions,
+			new Date().getFullYear(),
+		);
 		await this.saveData(this.settings);
 	}
 
