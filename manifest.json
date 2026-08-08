@@ -1,7 +1,7 @@
 {
 	"id": "bonsai-almanac",
 	"name": "Bonsai Almanac",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"minAppVersion": "1.7.2",
 	"description": "Track bonsai care windows (repotting, feeding, pruning, wiring, and more) from species notes written in Markdown with frontmatter, right inside your vault.",
 	"author": "dotknewt",
