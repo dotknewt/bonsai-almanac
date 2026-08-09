@@ -1,9 +1,11 @@
-import { Plugin, WorkspaceLeaf } from 'obsidian';
+import { Notice, Plugin, WorkspaceLeaf } from 'obsidian';
 import { BonsaiAlmanacSettings, DEFAULT_SETTINGS, BonsaiAlmanacSettingTab } from './settings';
 import { ALMANAC_VIEW_TYPE, AlmanacView, notifySpeciesLoadError } from './view/AlmanacView';
 import { loadSpeciesFromFolder } from './lib/speciesLoader';
 import { pruneCompletionsToYear } from './lib/storage';
 import { Species } from './types';
+import { BUNDLED_SPECIES_TEMPLATES } from './data/bundledSpeciesTemplates';
+import { importBundledSpeciesTemplates } from './lib/bundledSpeciesImport';
 
 export default class BonsaiAlmanacPlugin extends Plugin {
 	settings!: BonsaiAlmanacSettings;
@@ -23,6 +25,13 @@ export default class BonsaiAlmanacPlugin extends Plugin {
 			name: 'Open almanac',
 			callback: () => {
 				void this.activateView();
+			},
+		});
+		this.addCommand({
+			id: 'import-bundled-species-examples',
+			name: 'Import bundled species examples',
+			callback: () => {
+				void this.importBundledExamples();
 			},
 		});
 
@@ -100,5 +109,20 @@ export default class BonsaiAlmanacPlugin extends Plugin {
 			await leaf.setViewState({ type: ALMANAC_VIEW_TYPE, active: true });
 		}
 		if (leaf) await workspace.revealLeaf(leaf);
+	}
+
+	private async importBundledExamples(): Promise<void> {
+		try {
+			const { written, skipped } = await importBundledSpeciesTemplates({
+				app: this.app,
+				folderPath: this.settings.speciesFolder,
+				templates: BUNDLED_SPECIES_TEMPLATES,
+			});
+			await this.refreshAlmanacViews();
+			new Notice(`Imported ${written} bundled species notes (${skipped} skipped: already existed).`);
+		} catch (err) {
+			console.error('Bonsai Almanac: failed to import bundled species examples', err);
+			new Notice('Bonsai almanac: failed to import bundled species examples. See console for details.');
+		}
 	}
 }
