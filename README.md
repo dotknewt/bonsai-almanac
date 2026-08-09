@@ -15,6 +15,8 @@ Obsidian itself.
     grouped into *Open now*, *Coming up* and *Completed*.
   - A per-species **care plan** with check-offs, persisted in the plugin's
     data file (not written back to your notes).
+- Adds an **Import bundled species examples** command to copy built-in
+  species templates into your configured species folder.
 - Automatically refreshes when species notes are created, edited, renamed,
   or deleted.
 
@@ -54,8 +56,8 @@ after the roots have died...
   weeks for repotting, ~1 month for pruning, ~2 months for wiring, ~3 months
   for feeding/pest watch), same as the original bonsai app.
 
-See `examples/species/` for two ready-to-copy sample notes (Juniper, Japanese
-Maple) — drop them into your configured species folder to try the plugin.
+See `species/` for canonical ready-to-copy species templates generated from
+the upstream [dotknewt/bonsai](https://github.com/dotknewt/bonsai) seed data.
 
 ## How to use
 
@@ -71,7 +73,8 @@ Maple) — drop them into your configured species folder to try the plugin.
 - Reload Obsidian and enable **Bonsai Almanac** under **Settings →
   Community plugins**.
 - Set your species folder in the plugin's settings tab, then add species
-  notes (see the format above, or copy the examples in `examples/species/`).
+  notes (see the format above), or run **Import bundled species examples**
+  from the command palette to prefill the folder.
 
 ## Improve code quality with eslint
 
