@@ -1,6 +1,6 @@
 {
 	"name": "bonsai-almanac",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"description": "Track bonsai care windows from species notes written in Markdown with frontmatter, right inside your vault.",
 	"main": "main.js",
 	"type": "module",
